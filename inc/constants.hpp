@@ -1,5 +1,6 @@
 #define MEM_SIZE 4096
 #define GPR_COUNT 16
+#define STACK_SIZE 16
 
 #define INSTR_SIZE_B 2
 

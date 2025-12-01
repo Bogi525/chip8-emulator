@@ -10,7 +10,7 @@ build_chip8:
 	g++ $(OBJ_FILE) -L D:\Libraries\SDL3-3.2.26\i686-w64-mingw32\lib -lSDL3 -o $(BUILD_FILE)
 
 clean:
-	del $(BUILD_FILE) $(OBJ_FILE)
+	- del $(BUILD_FILE) $(OBJ_FILE)
 
 open_program:
 	$(BUILD_FILE)
