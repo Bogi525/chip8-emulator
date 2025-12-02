@@ -23,6 +23,8 @@
 
 #define SPRITE_MAX_WIDTH 8
 #define SPRITE_MAX_HEIGHT 16
+
+#define FONTSET_START 0x050
 #define FONT_WIDTH 4
 #define FONT_HEIGHT 5
 
