@@ -212,7 +212,6 @@ void Chip8::group8(uint16_t opcode) {
         }
         case 0x6: {
             uint16_t reg1 = (opcode & 0x0f00) >> 8;
-            uint16_t reg2 = (opcode & 0x00f0) >> 4;
             VF = gpr[reg1] & 1;
             gpr[reg1] >>= 1;
             break;
@@ -227,7 +226,6 @@ void Chip8::group8(uint16_t opcode) {
         }
         case 0xe: {
             uint16_t reg1 = (opcode & 0x0f00) >> 8;
-            uint16_t reg2 = (opcode & 0x00f0) >> 4;
             VF = gpr[reg1] >> 7 & 1;
             gpr[reg1] <<= 1;
             break;
@@ -258,17 +256,20 @@ void Chip8::groupB(uint16_t opcode) {
 
 void Chip8::groupC(uint16_t opcode) {
     // RNG
-    
+    uint16_t reg = (opcode & 0x0f00) >> 8;
+    uint8_t byte = opcode & 0x00ff;
+    gpr[reg] = (rand() % 256) & byte;
 }
 
 void Chip8::groupD(uint16_t opcode) {
-
+    
 }
 
 void Chip8::groupE(uint16_t opcode) {
-
+    // Skip if key
+    // Skip if NOT key
 }
 
 void Chip8::groupF(uint16_t opcode) {
-
+    
 }
