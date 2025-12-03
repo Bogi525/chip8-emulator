@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <iomanip>
 #include <functional>
+#include <random>
 #include <vector>
 #include <SDL3/SDL.h>
 #include "constants.hpp"

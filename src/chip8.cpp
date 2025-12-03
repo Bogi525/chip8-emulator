@@ -5,7 +5,7 @@ Chip8::Chip8() {}
 void Chip8::init(string rom) {
         pc = PROGRAM_START_ADDR;
         i = 0;
-        sp = 0;
+        sp = 0xff;
         delay_timer = 0;
         sound_timer = 0;
         stack = vector<uint16_t>(STACK_SIZE);
@@ -94,55 +94,171 @@ void Chip8::executeInstruction() {
 }
 
 void Chip8::group0(uint16_t opcode) {
+    switch (opcode) {
+    case 0x00e0: // Clear the display
+        for (int i = 0; i < DISPLAY_HEIGHT; i++) {
+            for (int j = 0; j < DISPLAY_WIDTH; j++) {
+                display[i][j] = 0;
+            }
+        }
+        break;
 
+    case 0x00ee: // RET
+        pc = stack[sp--];
+        break;
+    default:
+        cerr << "Error: Invalid instruction";
+        break;
+    }
 }
 
 void Chip8::group1(uint16_t opcode) {
-
+    // JMP
+    uint16_t addr = opcode & 0xfff;
+    pc = addr;
 }
 
 void Chip8::group2(uint16_t opcode) {
-
+    // CALL
+    stack[++sp] = pc;
+    uint16_t addr = opcode & 0xfff;
+    pc = addr;
 }
 
 void Chip8::group3(uint16_t opcode) {
-
+    // BEQ (REG, CONST)
+    uint16_t reg = (opcode & 0x0f00) >> 8;
+    uint8_t byte = opcode & 0x00ff;
+    if (gpr[reg] == byte) {
+        pc += 2;
+    }
 }
 
 void Chip8::group4(uint16_t opcode) {
-
+    // BNE (REG, CONST)
+    uint16_t reg = (opcode & 0x0f00) >> 8;
+    uint8_t byte = opcode & 0x00ff;
+    if (gpr[reg] != byte) {
+        pc += 2;
+    }
 }
 
 void Chip8::group5(uint16_t opcode) {
-
+    // BEQ (REG, REG)
+    uint16_t reg1 = (opcode & 0x0f00) >> 8;
+    uint16_t reg2 = (opcode & 0x00f0) >> 4;
+    if (gpr[reg1] == gpr[reg2]) {
+        pc += 2;
+    }
 }
 
 void Chip8::group6(uint16_t opcode) {
-
+    // LD
+    uint16_t reg = (opcode & 0x0f00) >> 8;
+    uint8_t byte = opcode & 0x00ff;
+    gpr[reg] = byte;
 }
 
 void Chip8::group7(uint16_t opcode) {
-
+    // ADD (REG, CONST)
+    uint16_t reg = (opcode & 0x0f00) >> 8;
+    uint8_t byte = opcode & 0x00ff;
+    gpr[reg] += byte;
 }
 
 void Chip8::group8(uint16_t opcode) {
-
+    uint16_t last_byte = opcode & 0x000f;
+    switch (last_byte) {
+        case 0x0: { // LD (REG, REG) 
+            uint16_t reg1 = (opcode & 0x0f00) >> 8;
+            uint16_t reg2 = (opcode & 0x00f0) >> 4;
+            gpr[reg1] = gpr[reg2];
+            break;
+        }
+        case 0x1: {
+            uint16_t reg1 = (opcode & 0x0f00) >> 8;
+            uint16_t reg2 = (opcode & 0x00f0) >> 4;
+            gpr[reg1] |= gpr[reg2];
+            break;
+        }
+        case 0x2: {
+            uint16_t reg1 = (opcode & 0x0f00) >> 8;
+            uint16_t reg2 = (opcode & 0x00f0) >> 4;
+            gpr[reg1] &= gpr[reg2];
+            break;
+        }
+        case 0x3: {
+            uint16_t reg1 = (opcode & 0x0f00) >> 8;
+            uint16_t reg2 = (opcode & 0x00f0) >> 4;
+            gpr[reg1] ^= gpr[reg2];
+            break;
+        }
+        case 0x4: {
+            uint16_t reg1 = (opcode & 0x0f00) >> 8;
+            uint16_t reg2 = (opcode & 0x00f0) >> 4;
+            uint8_t res = gpr[reg1] + gpr[reg2];
+            if (res < gpr[reg1]) VF = 1;
+            else VF = 0;
+            gpr[reg1] = res;
+            break; 
+        }
+        case 0x5: {
+            uint16_t reg1 = (opcode & 0x0f00) >> 8;
+            uint16_t reg2 = (opcode & 0x00f0) >> 4;
+            if (gpr[reg1] > gpr[reg2]) VF = 1;
+            else VF = 0;
+            gpr[reg1] -= gpr[reg2];
+            break;
+        }
+        case 0x6: {
+            uint16_t reg1 = (opcode & 0x0f00) >> 8;
+            uint16_t reg2 = (opcode & 0x00f0) >> 4;
+            VF = gpr[reg1] & 1;
+            gpr[reg1] >>= 1;
+            break;
+        }
+        case 0x7: {
+            uint16_t reg1 = (opcode & 0x0f00) >> 8;
+            uint16_t reg2 = (opcode & 0x00f0) >> 4;
+            if (gpr[reg2] > gpr[reg1]) VF = 1;
+            else VF = 0;
+            gpr[reg1] = gpr[reg2] - gpr[reg1];
+            break;
+        }
+        case 0xe: {
+            uint16_t reg1 = (opcode & 0x0f00) >> 8;
+            uint16_t reg2 = (opcode & 0x00f0) >> 4;
+            VF = gpr[reg1] >> 7 & 1;
+            gpr[reg1] <<= 1;
+            break;
+        }
+    }
 }
 
 void Chip8::group9(uint16_t opcode) {
-
+    // BNE (REG, REG)
+    uint16_t reg1 = (opcode & 0x0f00) >> 8;
+    uint16_t reg2 = (opcode & 0x00f0) >> 4;
+    if (gpr[reg1] != gpr[reg2]) {
+        pc += 2;
+    }
 }
 
 void Chip8::groupA(uint16_t opcode) {
-
+    // LD I, addr
+    uint16_t val = opcode & 0x0fff;
+    i = val;
 }
 
 void Chip8::groupB(uint16_t opcode) {
-
+    // JMP to NNN + V0
+    uint16_t val = opcode & 0x0fff;
+    pc = val + gpr[0x0];
 }
 
 void Chip8::groupC(uint16_t opcode) {
-
+    // RNG
+    
 }
 
 void Chip8::groupD(uint16_t opcode) {

@@ -29,3 +29,5 @@
 #define FONT_HEIGHT 5
 
 #define DELAY_TIMER_DECREMENT_RATE 60
+
+#define VF gpr[0xf]
