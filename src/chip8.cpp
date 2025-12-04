@@ -262,7 +262,23 @@ void Chip8::groupC(uint16_t opcode) {
 }
 
 void Chip8::groupD(uint16_t opcode) {
-    
+    // Draw on the display
+    uint16_t reg1 = (opcode & 0x0f00) >> 8;
+    uint16_t reg2 = (opcode & 0x00f0) >> 4;
+    uint8_t byte = opcode & 0x000f;
+    bool collision = false;
+    for (int i = 0; i < byte; i++) {
+        uint8_t to_draw = memory[this->i + i];
+        int y = (gpr[reg2] + i) % DISPLAY_HEIGHT;
+        for (int j = 0; j < SPRITE_MAX_WIDTH; j++) {
+            int x = (gpr[reg1] + j) % DISPLAY_WIDTH;
+            bool pixel_to_draw = (to_draw & (0x80 >> j)) ? 1 : 0;
+            if (display[y][x] && pixel_to_draw) collision = true;
+            display[y][x] = pixel_to_draw ^ display[y][x];
+        }
+    }
+    if (collision) VF = 1;
+    else VF = 0;
 }
 
 void Chip8::groupE(uint16_t opcode) {
