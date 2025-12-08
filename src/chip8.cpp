@@ -5,7 +5,7 @@ Chip8::Chip8() {}
 void Chip8::init(string rom) {
         pc = PROGRAM_START_ADDR;
         i = 0;
-        sp = 0xff;
+        sp = -1;
         delay_timer = 0;
         sound_timer = 0;
         stack = vector<uint16_t>(STACK_SIZE);
@@ -77,11 +77,38 @@ void Chip8::printMemory() {
     }
 }
 
-void Chip8::runProgram() {
-    while (!finished) {
-        fetchInstruction();
-        executeInstruction();
+void Chip8::cycle() {
+    fetchInstruction();
+    executeInstruction();
+    cout << hex << opcode << dec << '\n';
+}
+
+void Chip8::render(SDL_Renderer* renderer) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+    for (int y = 0; y < DISPLAY_HEIGHT; y++) {
+        for (int x = 0; x < DISPLAY_WIDTH; x++) {
+
+            if (display[y][x]) {
+
+                SDL_FRect rect = {
+                    float(x * DISPLAY_SCALE),
+                    float(y * DISPLAY_SCALE),
+                    float(DISPLAY_SCALE),
+                    float(DISPLAY_SCALE)
+                };
+
+                SDL_RenderFillRect(renderer, &rect);
+            }
+
+        }
     }
+
+    SDL_RenderPresent(renderer);
 }
 
 void Chip8::fetchInstruction() {
@@ -90,7 +117,8 @@ void Chip8::fetchInstruction() {
 }
 
 void Chip8::executeInstruction() {
-    finished = true; // placeholder
+    uint8_t group = (opcode & 0xf000) >> 12;
+    functions[group](opcode);
 }
 
 void Chip8::group0(uint16_t opcode) {
@@ -267,12 +295,12 @@ void Chip8::groupD(uint16_t opcode) {
     uint16_t reg2 = (opcode & 0x00f0) >> 4;
     uint8_t byte = opcode & 0x000f;
     bool collision = false;
-    for (int i = 0; i < byte; i++) {
-        uint8_t to_draw = memory[this->i + i];
-        int y = (gpr[reg2] + i) % DISPLAY_HEIGHT;
-        for (int j = 0; j < SPRITE_MAX_WIDTH; j++) {
-            int x = (gpr[reg1] + j) % DISPLAY_WIDTH;
-            bool pixel_to_draw = (to_draw & (0x80 >> j)) ? 1 : 0;
+    for (int row = 0; row < byte; row++) {
+        uint8_t to_draw = memory[this->i + row];
+        int y = (gpr[reg2] + row) % DISPLAY_HEIGHT;
+        for (int bit = 0; bit < SPRITE_MAX_WIDTH; bit++) {
+            int x = (gpr[reg1] + bit) % DISPLAY_WIDTH;
+            bool pixel_to_draw = (to_draw & (0x80 >> bit)) ? 1 : 0;
             if (display[y][x] && pixel_to_draw) collision = true;
             display[y][x] = pixel_to_draw ^ display[y][x];
         }

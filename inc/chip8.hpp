@@ -24,7 +24,8 @@ public:
 
     void init(string rom);
     void printMemory();
-    void runProgram();
+    void cycle();
+    void render(SDL_Renderer* renderer);
 
 private:
     Chip8();

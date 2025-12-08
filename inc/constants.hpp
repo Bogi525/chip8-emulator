@@ -20,6 +20,7 @@
 
 #define DISPLAY_WHITE 0x1
 #define DISPLAY_BLACK 0x0
+#define DISPLAY_SCALE 20
 
 #define SPRITE_MAX_WIDTH 8
 #define SPRITE_MAX_HEIGHT 16
@@ -29,5 +30,8 @@
 #define FONT_HEIGHT 5
 
 #define DELAY_TIMER_DECREMENT_RATE 60
+
+#define CPU_DELAY_MS 1000 / 700
+#define FRAME_DELAY_MS 1000 / 60
 
 #define VF gpr[0xf]
