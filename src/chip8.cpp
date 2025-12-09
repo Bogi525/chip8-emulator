@@ -115,68 +115,68 @@ void Chip8::updateKeyboardState(SDL_Event& event) {
     bool isPressed = (event.type == SDL_EVENT_KEY_DOWN);
 
     switch(event.key.key) {
-        case SDLK_0:
-            keys[0] = isPressed;
-            cout << isPressed;
-            break;
         case SDLK_1:
-            keys[1] = isPressed;
+            keys[0x1] = isPressed;
             cout << isPressed;
             break;
         case SDLK_2:
-            keys[2] = isPressed;
+            keys[0x2] = isPressed;
             cout << isPressed;
             break;
         case SDLK_3:
-            keys[3] = isPressed;
+            keys[0x3] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_4:
+            keys[0xc] = isPressed;
             cout << isPressed;
             break;
         case SDLK_Q:
-            keys[4] = isPressed;
+            keys[0x4] = isPressed;
             cout << isPressed;
             break;
         case SDLK_W:
-            keys[5] = isPressed;
+            keys[0x5] = isPressed;
             cout << isPressed;
             break;
         case SDLK_E:
-            keys[6] = isPressed;
+            keys[0x6] = isPressed;
             cout << isPressed;
             break;
         case SDLK_R:
-            keys[7] = isPressed;
+            keys[0xd] = isPressed;
             cout << isPressed;
             break;
         case SDLK_A:
-            keys[8] = isPressed;
+            keys[0x7] = isPressed;
             cout << isPressed;
             break;
         case SDLK_S:
-            keys[9] = isPressed;
+            keys[0x8] = isPressed;
             cout << isPressed;
             break;
         case SDLK_D:
-            keys[10] = isPressed;
+            keys[0x9] = isPressed;
             cout << isPressed;
             break;
         case SDLK_F:
-            keys[11] = isPressed;
+            keys[0xe] = isPressed;
             cout << isPressed;
             break;
         case SDLK_Z:
-            keys[12] = isPressed;
+            keys[0xa] = isPressed;
             cout << isPressed;
             break;
         case SDLK_X:
-            keys[13] = isPressed;
+            keys[0x0] = isPressed;
             cout << isPressed;
             break;
         case SDLK_C:
-            keys[14] = isPressed;
+            keys[0xb] = isPressed;
             cout << isPressed;
             break;
         case SDLK_V:
-            keys[15] = isPressed;
+            keys[0xf] = isPressed;
             cout << isPressed;
             break;
     }
@@ -406,5 +406,63 @@ void Chip8::groupE(uint16_t opcode) {
 }
 
 void Chip8::groupF(uint16_t opcode) {
-    
+    uint16_t reg = (opcode & 0x0f00) >> 8;
+    uint8_t byte = opcode & 0x00ff;
+    switch (byte) {
+        case 0x07: {
+            gpr[reg] = delay_timer;
+            break;
+        }
+        case 0x0a: {
+            bool pressed = false;
+            for (int i = 0; i <= keys.size(); i++) {
+                if (keys[i]) {
+                    pressed = true;
+                    gpr[reg] = i;
+                    break;
+                }
+            }
+            if (!pressed) pc -= 2;
+            break;
+        }
+        case 0x15: {
+            delay_timer = gpr[reg];
+            break;
+        }
+        case 0x18: {
+            sound_timer = gpr[reg];
+            break;
+        }
+        case 0x1e: {
+            i += gpr[reg];
+            break;
+        }
+        case 0x29: {
+            i = FONTSET_START + gpr[reg] * FONT_HEIGHT;
+            break;
+        }
+        case 0x33: {
+            uint8_t hundreds = (gpr[reg] / 100) % 10;
+            uint8_t tens = (gpr[reg] / 10) % 10;
+            uint8_t ones = gpr[reg] % 10;
+            memory[i] = hundreds;
+            memory[i + 1] = tens;
+            memory[i + 2] = ones;
+            break;
+        }
+        case 0x55: {
+            for (int move = 0; move < reg; move++) {
+                memory[i + move] = gpr[move];
+            }
+            break;
+        }
+        case 0x65: {
+            for (int move = 0; move < reg; move++) {
+                gpr[move] = memory[i + move];
+            }
+            break;
+        }
+        default:
+            break;
+    }
 }
