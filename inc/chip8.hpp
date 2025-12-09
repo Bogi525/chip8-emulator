@@ -27,6 +27,7 @@ public:
     void cycle();
     void render(SDL_Renderer* renderer);
     void updateKeyboardState(SDL_Event& event);
+    void decrementTimer();
 
 private:
     Chip8();

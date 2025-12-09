@@ -4,7 +4,7 @@
 using namespace std;
 
 int main() {
-    Chip8::getInstance().init("2-ibm-logo.ch8");
+    Chip8::getInstance().init("Airplane.ch8");
     Chip8::getInstance().printMemory();
     system("pause");
 
@@ -25,6 +25,7 @@ int main() {
 
     uint32_t lastCPUTime = SDL_GetTicks();
     uint32_t lastFrameTime = SDL_GetTicks();
+    uint32_t lastTimerUpdate = SDL_GetTicks();
 
     while (running) {
         while (SDL_PollEvent(&event)) {
@@ -45,6 +46,11 @@ int main() {
         if (now - lastFrameTime >= FRAME_DELAY_MS) {
             Chip8::getInstance().render(renderer);
             lastFrameTime = now;
+        }
+
+        if (now - lastTimerUpdate >= TIMER_DELAY_MS) {
+            Chip8::getInstance().decrementTimer();
+            lastTimerUpdate = now;
         }
     }
 

@@ -33,5 +33,6 @@
 
 #define CPU_DELAY_MS 1000 / 700
 #define FRAME_DELAY_MS 1000 / 60
+#define TIMER_DELAY_MS 1000 / 60
 
 #define VF gpr[0xf]

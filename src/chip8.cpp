@@ -80,7 +80,7 @@ void Chip8::printMemory() {
 void Chip8::cycle() {
     fetchInstruction();
     executeInstruction();
-    //cout << hex << opcode << dec << '\n';
+    cout << hex << opcode << dec << '\n';
 }
 
 void Chip8::render(SDL_Renderer* renderer) {
@@ -109,6 +109,11 @@ void Chip8::render(SDL_Renderer* renderer) {
     }
 
     SDL_RenderPresent(renderer);
+}
+
+void Chip8::decrementTimer() {
+    if (delay_timer > 0) delay_timer--;
+    if (delay_timer > 0) sound_timer--;
 }
 
 void Chip8::updateKeyboardState(SDL_Event& event) {
