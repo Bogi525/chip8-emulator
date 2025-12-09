@@ -26,6 +26,7 @@ public:
     void printMemory();
     void cycle();
     void render(SDL_Renderer* renderer);
+    void updateKeyboardState(SDL_Event& event);
 
 private:
     Chip8();
@@ -90,6 +91,8 @@ private:
     };
 
     vector<InstrPtr> functions;
+
+    vector<bool> keys = vector<bool>(16, false);
 
     bool finished = false;
 };

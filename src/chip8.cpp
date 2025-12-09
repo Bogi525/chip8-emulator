@@ -80,7 +80,7 @@ void Chip8::printMemory() {
 void Chip8::cycle() {
     fetchInstruction();
     executeInstruction();
-    cout << hex << opcode << dec << '\n';
+    //cout << hex << opcode << dec << '\n';
 }
 
 void Chip8::render(SDL_Renderer* renderer) {
@@ -109,6 +109,77 @@ void Chip8::render(SDL_Renderer* renderer) {
     }
 
     SDL_RenderPresent(renderer);
+}
+
+void Chip8::updateKeyboardState(SDL_Event& event) {
+    bool isPressed = (event.type == SDL_EVENT_KEY_DOWN);
+
+    switch(event.key.key) {
+        case SDLK_0:
+            keys[0] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_1:
+            keys[1] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_2:
+            keys[2] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_3:
+            keys[3] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_Q:
+            keys[4] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_W:
+            keys[5] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_E:
+            keys[6] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_R:
+            keys[7] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_A:
+            keys[8] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_S:
+            keys[9] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_D:
+            keys[10] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_F:
+            keys[11] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_Z:
+            keys[12] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_X:
+            keys[13] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_C:
+            keys[14] = isPressed;
+            cout << isPressed;
+            break;
+        case SDLK_V:
+            keys[15] = isPressed;
+            cout << isPressed;
+            break;
+    }
 }
 
 void Chip8::fetchInstruction() {
@@ -258,6 +329,8 @@ void Chip8::group8(uint16_t opcode) {
             gpr[reg1] <<= 1;
             break;
         }
+        default:
+            break;
     }
 }
 
@@ -310,8 +383,26 @@ void Chip8::groupD(uint16_t opcode) {
 }
 
 void Chip8::groupE(uint16_t opcode) {
-    // Skip if key
-    // Skip if NOT key
+    uint16_t reg = (opcode & 0x0f00) >> 8;
+    uint8_t byte = opcode & 0x00ff;
+    switch (byte) {
+        // SKP
+        case 0x9e: {
+            if (keys[gpr[reg]]) {
+                pc += 2;
+            }
+            break;
+        }
+        // SKNP
+        case 0xa1: {
+            if (!keys[gpr[reg]]) {
+                pc += 2;
+            }
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 void Chip8::groupF(uint16_t opcode) {

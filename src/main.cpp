@@ -29,6 +29,10 @@ int main() {
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT) running = false;
+
+            if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) {
+                Chip8::getInstance().updateKeyboardState(event);
+            }
         }
 
         uint32_t now = SDL_GetTicks();
