@@ -1,5 +1,7 @@
 #include "../inc/chip8.hpp"
 
+BeepState beep;
+
 Chip8::Chip8() {}
 
 void Chip8::init(string rom) {
@@ -17,6 +19,32 @@ void Chip8::init(string rom) {
         loadFontset();
         
         loadROM(rom);
+
+        beep.phase = 0;
+        beep.frequency = 440.0f;
+        beep.playing = false;
+
+        SDL_AudioSpec want;
+        SDL_zero(want);
+
+        want.freq = 44100;
+        want.format = SDL_AUDIO_S16;
+        want.channels = 1;
+
+        audioStream = SDL_OpenAudioDeviceStream(
+            SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
+            &want,
+            audioCallback,
+            &beep
+        );
+
+        if (!audioStream) {
+            SDL_Log("Failed to open audio stream: %s", SDL_GetError());
+            system("pause");
+            system("exit");
+        }
+
+        SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(audioStream));
     }
 
 void Chip8::setFunctionPointers() {
@@ -113,7 +141,12 @@ void Chip8::render(SDL_Renderer* renderer) {
 
 void Chip8::decrementTimer() {
     if (delay_timer > 0) delay_timer--;
-    if (delay_timer > 0) sound_timer--;
+    if (sound_timer > 0) {
+        sound_timer--;
+        beep.playing = true;
+    }
+    else beep.playing = false
+    ;
 }
 
 void Chip8::updateKeyboardState(SDL_Event& event) {
@@ -470,4 +503,30 @@ void Chip8::groupF(uint16_t opcode) {
         default:
             break;
     }
+}
+
+void audioCallback(void* userdata, SDL_AudioStream* astream, int additionalAmount, int totalAmount) {
+    BeepState* state = (BeepState*)userdata;
+
+    int sampleCount = additionalAmount / sizeof(int16_t);
+    int16_t* buffer = (int16_t*)SDL_malloc(additionalAmount);
+
+    for (int i = 0; i < sampleCount; i++) {
+        int16_t sample;
+
+        if (state->playing) {
+            sample = (state->phase < 0.5f) ? 3000 : -3000;
+
+            state->phase += state->frequency / 44100.0f;
+            if (state->phase >= 1.0f)
+                state->phase -= 1.0f;
+        } else {
+            sample = 0;
+        }
+
+        buffer[i] = sample;
+    }
+
+    SDL_PutAudioStreamData(astream, buffer, additionalAmount);
+    SDL_free(buffer);
 }

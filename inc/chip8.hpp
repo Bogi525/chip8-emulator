@@ -12,6 +12,14 @@ using namespace std;
 
 using InstrPtr = function<void(uint16_t opcode)>;
 
+struct BeepState {
+    float phase = 0.0f;
+    float frequency = 440.0f;
+    bool playing = false;
+};
+
+extern BeepState beep;
+
 class Chip8 {
 public:
     Chip8(const Chip8&) = delete;
@@ -96,4 +104,8 @@ private:
     vector<bool> keys = vector<bool>(16, false);
 
     bool finished = false;
+
+    SDL_AudioStream* audioStream;
 };
+
+void audioCallback(void* userdata, SDL_AudioStream* astream, int additionalAmount, int totalAmount);

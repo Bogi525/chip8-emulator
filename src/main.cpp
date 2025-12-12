@@ -4,12 +4,17 @@
 using namespace std;
 
 int main() {
+
+    // SDL Initialization
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
+        SDL_Log("SDL_Init failed: %s", SDL_GetError());
+        system("pause");
+        system("exit");
+    }
+
     Chip8::getInstance().init("Airplane.ch8");
     Chip8::getInstance().printMemory();
     system("pause");
-
-    // Create a Window
-    SDL_Init(SDL_INIT_VIDEO);
 
     SDL_Window* window = SDL_CreateWindow(
         "Chip-8 Emulator",
